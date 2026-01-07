@@ -34,11 +34,6 @@ namespace EmployeeAdminPortal.Controllers
                 orders.AddRange(response);
             }
             return Ok(orders);
-            // var orders = await dbContext.Orders
-            //     .AsNoTracking()
-            //     .ToListAsync();
-
-            // return Ok(orders);
         }
 
         // GET: api/Orders/{id}
@@ -62,18 +57,6 @@ namespace EmployeeAdminPortal.Controllers
             }
             return Ok(order);
         }
-        // {
-        //     var order = await dbContext.Orders
-        //         .AsNoTracking()
-        //         .FirstOrDefaultAsync(o => o.OrderId == id);
-
-        //     if (order == null)
-        //     {
-        //         return NotFound($"Order with ID {id} not found.");
-        //     }
-
-        //     return Ok(order);
-        // }
 
         // GET: api/Orders/customer/{customerId}
         [HttpGet]
@@ -90,13 +73,6 @@ namespace EmployeeAdminPortal.Controllers
                 orders.AddRange(response);
             }
             return Ok(orders);
-            // var orders = await dbContext.Orders
-            //     .AsNoTracking()
-            //     .Where(o => o.CustomerId == customerId)
-            //     .OrderByDescending(o => o.OrderDate)
-            //     .ToListAsync();
-
-            // return Ok(orders);
         }
 
         // GET: api/Orders/status/{status}
@@ -114,13 +90,6 @@ namespace EmployeeAdminPortal.Controllers
                 orders.AddRange(response);
             }
             return Ok(orders);
-            // var orders = await dbContext.Orders
-            //     .AsNoTracking()
-            //     .Where(o => o.Status == status)
-            //     .OrderByDescending(o => o.OrderDate)
-            //     .ToListAsync();
-
-            // return Ok(orders);
         }
 
         // POST: api/Orders
