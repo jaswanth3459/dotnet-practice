@@ -36,19 +36,29 @@ builder.Services.AddDbContext<ApplicationDbContex>(options =>
     .EnableDetailedErrors(builder.Environment.IsDevelopment())
 );
 
-builder.Services.AddSingleton<Container>(sp =>
+// Register Cosmos Client options and client as singletons
+var cosmosClientOptions = new CosmosClientOptions
 {
-    var cosmosClientOptions = new CosmosClientOptions
+    SerializerOptions = new CosmosSerializationOptions
     {
-        SerializerOptions = new CosmosSerializationOptions
-        {
-            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
-        }
-    };
+        PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+    }
+};
 
-    var cosmosClient = new CosmosClient(cosmosConnectionString, cosmosClientOptions);
-    var database = cosmosClient.GetDatabase(cosmosDatabaseName);
+var cosmosClient = new CosmosClient(cosmosConnectionString, cosmosClientOptions);
+var database = cosmosClient.GetDatabase(cosmosDatabaseName);
+
+// Register Employees Container
+builder.Services.AddKeyedSingleton<Container>("Employees", (sp, key) =>
+{
     var containerName = builder.Configuration["CosmosDb:Containers:Employees"] ?? "Employees";
+    return database.GetContainer(containerName);
+});
+
+// Register Orders Container
+builder.Services.AddKeyedSingleton<Container>("Orders", (sp, key) =>
+{
+    var containerName = builder.Configuration["CosmosDb:Containers:Orders"] ?? "Orders";
     return database.GetContainer(containerName);
 });
 

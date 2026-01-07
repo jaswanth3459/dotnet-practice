@@ -1,8 +1,10 @@
 using EmployeeAdminPortal.Data;
 using EmployeeAdminPortal.Models;
 using EmployeeAdminPortal.Models.Entites;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Azure.Cosmos;
 
 namespace EmployeeAdminPortal.Controllers
 {
@@ -11,21 +13,32 @@ namespace EmployeeAdminPortal.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly ApplicationDbContex dbContext;
+          private readonly Container _container;
 
-        public OrdersController(ApplicationDbContex dbContext)
+        public OrdersController(ApplicationDbContex dbContext, [FromKeyedServices("Orders")] Container container)
         {
             this.dbContext = dbContext;
+            _container = container;
         }
 
         // GET: api/Orders
         [HttpGet]
         public async Task<IActionResult> GetAllOrders()
         {
-            var orders = await dbContext.Orders
-                .AsNoTracking()
-                .ToListAsync();
-
+            QueryDefinition query = new QueryDefinition("SELECT * FROM c");
+            var iterator = _container.GetItemQueryIterator<Order>(query);
+            var orders = new List<Order>();
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                orders.AddRange(response);
+            }
             return Ok(orders);
+            // var orders = await dbContext.Orders
+            //     .AsNoTracking()
+            //     .ToListAsync();
+
+            // return Ok(orders);
         }
 
         // GET: api/Orders/{id}
@@ -33,30 +46,57 @@ namespace EmployeeAdminPortal.Controllers
         [Route("{id:guid}")]
         public async Task<IActionResult> GetOrderById(Guid id)
         {
-            var order = await dbContext.Orders
-                .AsNoTracking()
-                .FirstOrDefaultAsync(o => o.OrderId == id);
-
+            QueryDefinition query = new QueryDefinition("SELECT * FROM c WHERE c.OrderId = @id")
+                .WithParameter("@id", id.ToString());
+            var iterator = _container.GetItemQueryIterator<Order>(query);
+            var orders = new List<Order>();
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                orders.AddRange(response);
+            }
+            var order = orders.FirstOrDefault();
             if (order == null)
             {
                 return NotFound($"Order with ID {id} not found.");
             }
-
             return Ok(order);
         }
+        // {
+        //     var order = await dbContext.Orders
+        //         .AsNoTracking()
+        //         .FirstOrDefaultAsync(o => o.OrderId == id);
+
+        //     if (order == null)
+        //     {
+        //         return NotFound($"Order with ID {id} not found.");
+        //     }
+
+        //     return Ok(order);
+        // }
 
         // GET: api/Orders/customer/{customerId}
         [HttpGet]
         [Route("customer/{customerId:guid}")]
         public async Task<IActionResult> GetOrdersByCustomer(Guid customerId)
         {
-            var orders = await dbContext.Orders
-                .AsNoTracking()
-                .Where(o => o.CustomerId == customerId)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
-
+            QueryDefinition query = new QueryDefinition("SELECT * FROM c WHERE c.CustomerId = @customerId")
+                .WithParameter("@customerId", customerId.ToString());
+            var iterator = _container.GetItemQueryIterator<Order>(query);
+            var orders = new List<Order>();
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                orders.AddRange(response);
+            }
             return Ok(orders);
+            // var orders = await dbContext.Orders
+            //     .AsNoTracking()
+            //     .Where(o => o.CustomerId == customerId)
+            //     .OrderByDescending(o => o.OrderDate)
+            //     .ToListAsync();
+
+            // return Ok(orders);
         }
 
         // GET: api/Orders/status/{status}
@@ -64,13 +104,23 @@ namespace EmployeeAdminPortal.Controllers
         [Route("status/{status}")]
         public async Task<IActionResult> GetOrdersByStatus(OrderStatus status)
         {
-            var orders = await dbContext.Orders
-                .AsNoTracking()
-                .Where(o => o.Status == status)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
-
+            QueryDefinition query = new QueryDefinition("SELECT * FROM c WHERE c.Status = @status")
+                .WithParameter("@status", status.ToString());
+            var iterator = _container.GetItemQueryIterator<Order>(query);
+            var orders = new List<Order>();
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                orders.AddRange(response);
+            }
             return Ok(orders);
+            // var orders = await dbContext.Orders
+            //     .AsNoTracking()
+            //     .Where(o => o.Status == status)
+            //     .OrderByDescending(o => o.OrderDate)
+            //     .ToListAsync();
+
+            // return Ok(orders);
         }
 
         // POST: api/Orders

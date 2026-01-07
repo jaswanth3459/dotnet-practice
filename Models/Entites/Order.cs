@@ -2,7 +2,7 @@ namespace EmployeeAdminPortal.Models.Entites
 {
     public class Order
     {
-        public Guid OrderId { get; set; }
+        public Guid OrderId { get; set; } = Guid.NewGuid();
         public string OrderNumber { get; set; } = string.Empty;
         public DateTime OrderDate { get; set; }
         public Guid CustomerId { get; set; } // References Employee as customer

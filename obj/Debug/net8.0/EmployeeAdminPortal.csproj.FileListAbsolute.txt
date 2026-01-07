@@ -157,3 +157,4 @@ C:\Users\Jaswa\dot-net\EmployeeAdminPortal\EmployeeAdminPortal\bin\Debug\net8.0\
 C:\Users\Jaswa\dot-net\EmployeeAdminPortal\EmployeeAdminPortal\bin\Debug\net8.0\runtimes\win-x64\native\vcruntime140_1.dll
 C:\Users\Jaswa\dot-net\EmployeeAdminPortal\EmployeeAdminPortal\bin\Debug\net8.0\appsettings.Production.json
 C:\Users\Jaswa\dot-net\EmployeeAdminPortal\EmployeeAdminPortal\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+C:\Users\Jaswa\dot-net\EmployeeAdminPortal\EmployeeAdminPortal\obj\Debug\net8.0\EmployeeAdminPortal.sourcelink.json

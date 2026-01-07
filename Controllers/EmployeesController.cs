@@ -15,7 +15,7 @@ namespace EmployeeAdminPortal.Controllers
         private readonly ApplicationDbContex dbContex;
         private readonly Container _container;
 
-        public EmployeesController(ApplicationDbContex dbContex, Container container)
+        public EmployeesController(ApplicationDbContex dbContex, [FromKeyedServices("Employees")] Container container)
         {
             this.dbContex = dbContex;
             _container = container;
