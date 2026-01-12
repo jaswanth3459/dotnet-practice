@@ -116,6 +116,38 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "JwtDecodeExample.Controllers.JwtController",
+    "Method": "DecodeAndSaveToken",
+    "RelativePath": "api/Jwt/decode-and-save",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EmployeeAdminPortal.Models.DecodeTokenRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "JwtDecodeExample.Controllers.JwtController",
+    "Method": "UpdateTokenData",
+    "RelativePath": "api/Jwt/update-token-data",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EmployeeAdminPortal.Models.DecodeTokenRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "EmployeeAdminPortal.Controllers.OrdersController",
     "Method": "GetAllOrders",
     "RelativePath": "api/Orders",

@@ -11,6 +11,7 @@ namespace EmployeeAdminPortal.Data
 
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<UserInfo> UserInfos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +23,8 @@ namespace EmployeeAdminPortal.Data
             modelBuilder.Entity<Order>().OwnsOne(o => o.BillingAddress);
             modelBuilder.Entity<Order>().OwnsOne(o => o.Payment);
             modelBuilder.Entity<Order>().OwnsMany(o => o.Items);
+            modelBuilder.Entity<UserInfo>().ToContainer("UserInfos");
+            modelBuilder.Entity<UserInfo>().HasPartitionKey(u => u.UserId);
            
         }
     }

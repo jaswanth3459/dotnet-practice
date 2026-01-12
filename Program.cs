@@ -62,6 +62,13 @@ builder.Services.AddKeyedSingleton<Container>("Orders", (sp, key) =>
     return database.GetContainer(containerName);
 });
 
+// Register UserInfos Container
+builder.Services.AddKeyedSingleton<Container>("UserInfos", (sp, key) =>
+{
+    var containerName = builder.Configuration["CosmosDb:Containers:UserInfos"] ?? "UserInfos";
+    return database.GetContainer(containerName);
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
