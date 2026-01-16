@@ -490,31 +490,24 @@
   "components": {
     "schemas": {
       "AddEmployeeDto": {
-        "required": [
-          "email",
-          "name",
-          "salary"
-        ],
         "type": "object",
         "properties": {
           "name": {
-            "minLength": 3,
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "email": {
-            "minLength": 1,
-            "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "phone": {
-            "pattern": "^\\d{10}$",
             "type": "string",
             "nullable": true
           },
           "salary": {
-            "minimum": 0.01,
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -701,31 +694,24 @@
         "format": "int32"
       },
       "UpdateEmployeeDto": {
-        "required": [
-          "email",
-          "name",
-          "salary"
-        ],
         "type": "object",
         "properties": {
           "name": {
-            "minLength": 3,
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "email": {
-            "minLength": 1,
-            "pattern": "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "phone": {
-            "pattern": "^\\d{10}$",
             "type": "string",
             "nullable": true
           },
           "salary": {
-            "minimum": 0.01,
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           }
         },
         "additionalProperties": false

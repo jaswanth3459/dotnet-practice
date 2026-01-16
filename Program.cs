@@ -1,4 +1,5 @@
 using EmployeeAdminPortal.Data;
+using EmployeeAdminPortal.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Azure.Cosmos;
@@ -68,6 +69,9 @@ builder.Services.AddKeyedSingleton<Container>("UserInfos", (sp, key) =>
     var containerName = builder.Configuration["CosmosDb:Containers:UserInfos"] ?? "UserInfos";
     return database.GetContainer(containerName);
 });
+
+// Register Services
+builder.Services.AddScoped<EmployeeService >();
 
 var app = builder.Build();
 
