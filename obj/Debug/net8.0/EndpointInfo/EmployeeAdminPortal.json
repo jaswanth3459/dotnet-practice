@@ -139,28 +139,19 @@
             "description": "OK"
           }
         }
-      }
-    },
-    "/api/Employees/{EmployeeId }": {
+      },
       "delete": {
         "tags": [
           "Employees"
         ],
         "parameters": [
           {
-            "name": "EmployeeId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "EmployeeId ",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],

@@ -1,9 +1,8 @@
 using EmployeeAdminPortal.Data;
+using EmployeeAdminPortal.Exceptions;
 using EmployeeAdminPortal.Models;
 using EmployeeAdminPortal.Models.Entites;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Azure.Cosmos;
 
 namespace EmployeeAdminPortal.Controllers
@@ -53,7 +52,7 @@ namespace EmployeeAdminPortal.Controllers
             var order = orders.FirstOrDefault();
             if (order == null)
             {
-                return NotFound($"Order with ID {id} not found.");
+                throw new NotFoundException("Order", id.ToString());
             }
             return Ok(order);
         }
@@ -104,8 +103,8 @@ namespace EmployeeAdminPortal.Controllers
                 subtotal += item.TotalPrice;
             }
 
-            decimal tax = subtotal * 0.10m; // 10% tax
-            decimal shippingCost = 15.00m; // Flat shipping cost
+            decimal tax = subtotal * 0.10m;
+            decimal shippingCost = 15.00m;
             decimal totalAmount = subtotal + tax + shippingCost;
 
             var order = new Order
@@ -147,7 +146,7 @@ namespace EmployeeAdminPortal.Controllers
 
             if (order == null)
             {
-                return NotFound($"Order with ID {id} not found.");
+                throw new NotFoundException("Order", id.ToString());
             }
 
             // Update only provided fields
@@ -155,7 +154,6 @@ namespace EmployeeAdminPortal.Controllers
             {
                 order.Status = updateOrderDto.Status.Value;
 
-                // Auto-update dates based on status
                 if (updateOrderDto.Status == OrderStatus.Shipped && !order.ShippedDate.HasValue)
                 {
                     order.ShippedDate = DateTime.UtcNow;
@@ -176,7 +174,6 @@ namespace EmployeeAdminPortal.Controllers
             {
                 order.Items = updateOrderDto.Items;
 
-                // Recalculate totals
                 decimal subtotal = 0;
                 foreach (var item in order.Items)
                 {
@@ -227,7 +224,7 @@ namespace EmployeeAdminPortal.Controllers
 
             if (order == null)
             {
-                return NotFound($"Order with ID {id} not found.");
+                throw new NotFoundException("Order", id.ToString());
             }
 
             dbContext.Orders.Remove(order);
@@ -236,7 +233,6 @@ namespace EmployeeAdminPortal.Controllers
             return Ok(new { message = "Order deleted successfully", orderId = id });
         }
 
-        // Helper method to generate order numbers
         private string GenerateOrderNumber()
         {
             return $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
@@ -251,12 +247,12 @@ namespace EmployeeAdminPortal.Controllers
 
             if (order == null)
             {
-                return NotFound($"Order with ID {id} not found.");
+                throw new NotFoundException("Order", id.ToString());
             }
 
             if (order.Status == OrderStatus.Delivered)
             {
-                return BadRequest("Cannot cancel a delivered order.");
+                throw new BadRequestException("Cannot cancel a delivered order.");
             }
 
             order.Status = OrderStatus.Cancelled;

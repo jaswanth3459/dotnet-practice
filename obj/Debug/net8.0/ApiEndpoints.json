@@ -43,27 +43,6 @@
   },
   {
     "ContainingType": "EmployeeAdminPortal.Controllers.EmployeesController",
-    "Method": "DeleteEmployee",
-    "RelativePath": "api/Employees/{EmployeeId }",
-    "HttpMethod": "DELETE",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "EmployeeId",
-        "Type": "System.Guid",
-        "IsRequired": false
-      },
-      {
-        "Name": "EmployeeId ",
-        "Type": "",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "EmployeeAdminPortal.Controllers.EmployeesController",
     "Method": "UpdateEmployee",
     "RelativePath": "api/Employees/{id}",
     "HttpMethod": "PUT",
@@ -78,6 +57,22 @@
       {
         "Name": "updateEmployeeDto",
         "Type": "EmployeeAdminPortal.Models.UpdateEmployeeDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EmployeeAdminPortal.Controllers.EmployeesController",
+    "Method": "DeleteEmployee",
+    "RelativePath": "api/Employees/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
         "IsRequired": true
       }
     ],

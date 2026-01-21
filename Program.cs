@@ -1,4 +1,5 @@
 using EmployeeAdminPortal.Data;
+using EmployeeAdminPortal.Middleware;
 using EmployeeAdminPortal.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +91,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthorization();
 

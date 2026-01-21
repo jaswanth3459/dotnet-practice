@@ -1,10 +1,10 @@
-﻿using EmployeeAdminPortal.Models;
-using EmployeeAdminPortal.Models.Entites;
+using EmployeeAdminPortal.Models;
 using EmployeeAdminPortal.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeAdminPortal.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeesController : ControllerBase
@@ -28,57 +28,30 @@ namespace EmployeeAdminPortal.Controllers
         public async Task<IActionResult> GetEmployeeByName(string name)
         {
             var employees = await _employeeService.GetEmployeeByNameAsync(name);
-
-            if (!employees.Any())
-            {
-                return NotFound($"No employee found with name '{name}'.");
-            }
-
             return Ok(employees);
         }
+
         [HttpPost]
         public async Task<IActionResult> AddEmployee(AddEmployeeDto addEmployeeDto)
         {
-            var result = await _employeeService.AddEmployeeAsync(addEmployeeDto);
-
-            if (!result.Success)
-            {
-                return BadRequest(result.ErrorResponse);
-            }
-
-            return Ok(result.Employee);
+            var employee = await _employeeService.AddEmployeeAsync(addEmployeeDto);
+            return Ok(employee);
         }
+
         [HttpPut]
         [Route("{id:guid}")]
         public async Task<IActionResult> UpdateEmployee(Guid id, UpdateEmployeeDto updateEmployeeDto)
         {
-            var result = await _employeeService.UpdateEmployeeAsync(id, updateEmployeeDto);
-
-            if (!result.Success && result.Employee == null)
-            {
-                return NotFound();
-            }
-
-            if (!result.Success)
-            {
-                return BadRequest(result.ErrorResponse);
-            }
-
-            return Ok(result.Employee);
+            var employee = await _employeeService.UpdateEmployeeAsync(id, updateEmployeeDto);
+            return Ok(employee);
         }
 
         [HttpDelete]
-        [Route("{EmployeeId :guid}")]
-        public async Task<IActionResult> DeleteEmployee(Guid EmployeeId)
+        [Route("{id:guid}")]
+        public async Task<IActionResult> DeleteEmployee(Guid id)
         {
-            var result = await _employeeService.DeleteEmployeeAsync(EmployeeId);
-
-            if (!result.Success)
-            {
-                return NotFound();
-            }
-
-            return Ok();
+            var employee = await _employeeService.DeleteEmployeeAsync(id);
+            return Ok(new { message = "Employee deleted successfully", employee });
         }
     }
 }

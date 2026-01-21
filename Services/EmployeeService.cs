@@ -1,5 +1,6 @@
 using EmployeeAdminPortal.Constants;
 using EmployeeAdminPortal.Data;
+using EmployeeAdminPortal.Exceptions;
 using EmployeeAdminPortal.Models;
 using EmployeeAdminPortal.Models.Entites;
 using Microsoft.AspNetCore.Mvc;
@@ -48,47 +49,26 @@ namespace EmployeeAdminPortal.Services
                 var response = await iterator.ReadNextAsync();
                 employees.AddRange(response);
             }
+            if (!employees.Any())
+            {
+                throw new NotFoundException($"No employee found with name '{name}'");
+            }
 
             return employees;
         }
 
-        public async Task<(bool Success, ErrorResponse? ErrorResponse, Employee? Employee)> AddEmployeeAsync(AddEmployeeDto addEmployeeDto)
+        public async Task<Employee> AddEmployeeAsync(AddEmployeeDto addEmployeeDto)
         {
             var allErrors = new List<ErrorDetail>();
 
-            var nameValidation = ValidateName(addEmployeeDto.Name);
-            if (nameValidation != null)
-            {
-                allErrors.AddRange(nameValidation.Errors);
-            }
-
-            var emailValidation = ValidateEmail(addEmployeeDto.Email);
-            if (emailValidation != null)
-            {
-                allErrors.AddRange(emailValidation.Errors);
-            }
-
-            var phoneValidation = ValidatePhone(addEmployeeDto.Phone);
-            if (phoneValidation != null)
-            {
-                allErrors.AddRange(phoneValidation.Errors);
-            }
-
-            var salaryValidation = ValidateSalary(addEmployeeDto.Salary);
-            if (salaryValidation != null)
-            {
-                allErrors.AddRange(salaryValidation.Errors);
-            }
-
+            ValidateName(addEmployeeDto.Name, null, allErrors);
+            ValidateEmail(addEmployeeDto.Email, null, allErrors);
+            ValidatePhone(addEmployeeDto.Phone, null, allErrors);
+            ValidateSalary(addEmployeeDto.Salary, allErrors);
             if (allErrors.Any())
             {
-                return (false, new ErrorResponse
-                {
-                    Message = "Errors in the request.",
-                    Errors = allErrors
-                }, null);
+                throw new ValidationException(allErrors);
             }
-
             var employeeEntity = new Employee()
             {
                 Name = addEmployeeDto.Name!,
@@ -100,52 +80,27 @@ namespace EmployeeAdminPortal.Services
             _dbContex.Employees.Add(employeeEntity);
             await _dbContex.SaveChangesAsync();
 
-            return (true, null, employeeEntity);
+            return employeeEntity;
         }
 
-        public async Task<(bool Success, ErrorResponse? ErrorResponse, Employee? Employee)> UpdateEmployeeAsync(Guid id, UpdateEmployeeDto updateEmployeeDto)
+        public async Task<Employee> UpdateEmployeeAsync(Guid id, UpdateEmployeeDto updateEmployeeDto)
         {
             var employee = await _dbContex.Employees.FindAsync(id);
             if (employee is null)
             {
-                return (false, null, null);
+                throw new NotFoundException("Employee", id.ToString());
             }
 
             var allErrors = new List<ErrorDetail>();
 
-            var nameValidation = ValidateName(updateEmployeeDto.Name, id);
-            if (nameValidation != null)
-            {
-                allErrors.AddRange(nameValidation.Errors);
-            }
-
-            var emailValidation = ValidateEmail(updateEmployeeDto.Email, id);
-            if (emailValidation != null)
-            {
-                allErrors.AddRange(emailValidation.Errors);
-            }
-
-            var phoneValidation = ValidatePhone(updateEmployeeDto.Phone, id);
-            if (phoneValidation != null)
-            {
-                allErrors.AddRange(phoneValidation.Errors);
-            }
-
-            var salaryValidation = ValidateSalary(updateEmployeeDto.Salary);
-            if (salaryValidation != null)
-            {
-                allErrors.AddRange(salaryValidation.Errors);
-            }
-
+            ValidateName(updateEmployeeDto.Name, id, allErrors);
+            ValidateEmail(updateEmployeeDto.Email, id, allErrors);
+            ValidatePhone(updateEmployeeDto.Phone, id, allErrors);
+            ValidateSalary(updateEmployeeDto.Salary, allErrors);
             if (allErrors.Any())
             {
-                return (false, new ErrorResponse
-                {
-                    Message = "Errors in the request.",
-                    Errors = allErrors
-                }, null);
+                throw new ValidationException(allErrors);
             }
-
             employee.Name = updateEmployeeDto.Name!;
             employee.Email = updateEmployeeDto.Email!;
             employee.Phone = updateEmployeeDto.Phone;
@@ -153,27 +108,24 @@ namespace EmployeeAdminPortal.Services
 
             await _dbContex.SaveChangesAsync();
 
-            return (true, null, employee);
+            return employee;
         }
-
-        public async Task<(bool Success, Employee? Employee)> DeleteEmployeeAsync(Guid employeeId)
+        public async Task<Employee> DeleteEmployeeAsync(Guid employeeId)
         {
             var employee = await _dbContex.Employees.FindAsync(employeeId);
             if (employee is null)
             {
-                return (false, null);
+                throw new NotFoundException("Employee", employeeId.ToString());
             }
 
             _dbContex.Employees.Remove(employee);
             await _dbContex.SaveChangesAsync();
 
-            return (true, employee);
+            return employee;
         }
 
-        private ErrorResponse? ValidatePhone(string? phone, Guid? excludeEmployeeId = null)
+        private void ValidatePhone(string? phone, Guid? excludeEmployeeId, List<ErrorDetail> errors)
         {
-            var errors = new List<ErrorDetail>();
-
             if (string.IsNullOrEmpty(phone))
             {
                 errors.Add(new ErrorDetail
@@ -184,8 +136,9 @@ namespace EmployeeAdminPortal.Services
                     Value = phone ?? "",
                     Location = "body"
                 });
+                return; 
             }
-            else if (!Regex.IsMatch(phone, @"^\d{10}$"))
+            if (!Regex.IsMatch(phone, @"^\d{10}$"))
             {
                 errors.Add(new ErrorDetail
                 {
@@ -195,48 +148,26 @@ namespace EmployeeAdminPortal.Services
                     Value = phone,
                     Location = "body"
                 });
+                return;
             }
-            else
+            var existingEmployee = _dbContex.Employees
+                .FirstOrDefault(e => e.Phone == phone && (excludeEmployeeId == null || e.EmployeeId != excludeEmployeeId));
+
+            if (existingEmployee != null)
             {
-                var existingEmployee = _dbContex.Employees
-                    .FirstOrDefault(e => e.Phone == phone && (excludeEmployeeId == null || e.EmployeeId != excludeEmployeeId));
-
-                if (existingEmployee != null)
+                errors.Add(new ErrorDetail
                 {
-                    return new ErrorResponse
-                    {
-                        Message = "Phone number already exists.",
-                        Errors = new List<ErrorDetail>
-                        {
-                            new ErrorDetail
-                            {
-                                Element = "phone",
-                                Code = "E14003",
-                                Message = ErrorCodes.GetErrorMessage("E14003"),
-                                Value = phone,
-                                Location = "body"
-                            }
-                        }
-                    };
-                }
+                    Element = "phone",
+                    Code = "E14003",
+                    Message = ErrorCodes.GetErrorMessage("E14003"),
+                    Value = phone,
+                    Location = "body"
+                });
             }
-
-            if (errors.Any())
-            {
-                return new ErrorResponse
-                {
-                    Message = "Errors in the request.",
-                    Errors = errors
-                };
-            }
-
-            return null;
         }
 
-        private ErrorResponse? ValidateName(string? name, Guid? excludeEmployeeId = null)
+        private void ValidateName(string? name, Guid? excludeEmployeeId, List<ErrorDetail> errors)
         {
-            var errors = new List<ErrorDetail>();
-
             if (string.IsNullOrEmpty(name))
             {
                 errors.Add(new ErrorDetail
@@ -247,8 +178,9 @@ namespace EmployeeAdminPortal.Services
                     Value = name ?? "",
                     Location = "body"
                 });
+                return;
             }
-            else if (name.Length < 3)
+            if (name.Length < 3)
             {
                 errors.Add(new ErrorDetail
                 {
@@ -258,8 +190,9 @@ namespace EmployeeAdminPortal.Services
                     Value = name,
                     Location = "body"
                 });
+                return;
             }
-            else if (name.Length > 50)
+            if (name.Length > 50)
             {
                 errors.Add(new ErrorDetail
                 {
@@ -269,48 +202,26 @@ namespace EmployeeAdminPortal.Services
                     Value = name,
                     Location = "body"
                 });
+                return;
             }
-            else
+            var existingEmployee = _dbContex.Employees
+                .FirstOrDefault(e => e.Name == name && (excludeEmployeeId == null || e.EmployeeId != excludeEmployeeId));
+
+            if (existingEmployee != null)
             {
-                var existingEmployee = _dbContex.Employees
-                    .FirstOrDefault(e => e.Name == name && (excludeEmployeeId == null || e.EmployeeId != excludeEmployeeId));
-
-                if (existingEmployee != null)
+                errors.Add(new ErrorDetail
                 {
-                    return new ErrorResponse
-                    {
-                        Message = "Name already exists.",
-                        Errors = new List<ErrorDetail>
-                        {
-                            new ErrorDetail
-                            {
-                                Element = "name",
-                                Code = "E14012",
-                                Message = ErrorCodes.GetErrorMessage("E14012"),
-                                Value = name,
-                                Location = "body"
-                            }
-                        }
-                    };
-                }
+                    Element = "name",
+                    Code = "E14012",
+                    Message = ErrorCodes.GetErrorMessage("E14012"),
+                    Value = name,
+                    Location = "body"
+                });
             }
-
-            if (errors.Any())
-            {
-                return new ErrorResponse
-                {
-                    Message = "Errors in the request.",
-                    Errors = errors
-                };
-            }
-
-            return null;
         }
 
-        private ErrorResponse? ValidateEmail(string? email, Guid? excludeEmployeeId = null)
+        private void ValidateEmail(string? email, Guid? excludeEmployeeId, List<ErrorDetail> errors)
         {
-            var errors = new List<ErrorDetail>();
-
             if (string.IsNullOrEmpty(email))
             {
                 errors.Add(new ErrorDetail
@@ -321,8 +232,9 @@ namespace EmployeeAdminPortal.Services
                     Value = email ?? "",
                     Location = "body"
                 });
+                return;
             }
-            else if (!Regex.IsMatch(email, @"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
+            if (!Regex.IsMatch(email, @"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
             {
                 errors.Add(new ErrorDetail
                 {
@@ -332,48 +244,26 @@ namespace EmployeeAdminPortal.Services
                     Value = email,
                     Location = "body"
                 });
+                return;
             }
-            else
+            var existingEmployee = _dbContex.Employees
+                .FirstOrDefault(e => e.Email == email && (excludeEmployeeId == null || e.EmployeeId != excludeEmployeeId));
+
+            if (existingEmployee != null)
             {
-                var existingEmployee = _dbContex.Employees
-                    .FirstOrDefault(e => e.Email == email && (excludeEmployeeId == null || e.EmployeeId != excludeEmployeeId));
-
-                if (existingEmployee != null)
+                errors.Add(new ErrorDetail
                 {
-                    return new ErrorResponse
-                    {
-                        Message = "Email already exists.",
-                        Errors = new List<ErrorDetail>
-                        {
-                            new ErrorDetail
-                            {
-                                Element = "email",
-                                Code = "E14009",
-                                Message = ErrorCodes.GetErrorMessage("E14009"),
-                                Value = email,
-                                Location = "body"
-                            }
-                        }
-                    };
-                }
+                    Element = "email",
+                    Code = "E14009",
+                    Message = ErrorCodes.GetErrorMessage("E14009"),
+                    Value = email,
+                    Location = "body"
+                });
             }
-
-            if (errors.Any())
-            {
-                return new ErrorResponse
-                {
-                    Message = "Errors in the request.",
-                    Errors = errors
-                };
-            }
-
-            return null;
         }
 
-        private ErrorResponse? ValidateSalary(decimal? salary)
+        private void ValidateSalary(decimal? salary, List<ErrorDetail> errors)
         {
-            var errors = new List<ErrorDetail>();
-
             if (salary == null)
             {
                 errors.Add(new ErrorDetail
@@ -384,8 +274,9 @@ namespace EmployeeAdminPortal.Services
                     Value = "",
                     Location = "body"
                 });
+                return;
             }
-            else if (salary <= 0)
+            if (salary <= 0)
             {
                 errors.Add(new ErrorDetail
                 {
@@ -396,17 +287,6 @@ namespace EmployeeAdminPortal.Services
                     Location = "body"
                 });
             }
-
-            if (errors.Any())
-            {
-                return new ErrorResponse
-                {
-                    Message = "Errors in the request.",
-                    Errors = errors
-                };
-            }
-
-            return null;
         }
     }
 }
